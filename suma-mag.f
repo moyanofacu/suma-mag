@@ -70,28 +70,33 @@ c     REVISADO
                DELTAT=ABS(AGEP(J)-AGES(I)) !ESTE RECORRE LA SECUNDARIA
                if (deltat < min) then ! Busco el mas cercano en edad del otro track
                   min=deltat
-                  ind_min1=i
-                  ind_min2=i+1
-                  do while (agep(j)-ages(ind_min1) < 0 )
-                     ind_min1 = ind_min1-1
-                  enddo                  
-                  do while(agep(j)-ages(ind_min2) > 0 )
-                     ind_min2 = ind_min2+1
-                  enddo
-                  exit          ! Una vez que encuentra el primero sale del loop
+                  if (agep(j)-ages(i) < 0) then
+                     ind_min1=i-1
+                  else
+                     ind_min1=i
+                  endif
+                  ind_min2=ind_min1+1
                endif
                I=I+1
             ENDDO
             if (ind_min1==0 .or. ind_min2==0) then !esto es porque si alguna no cumple la tolerancia
-               ind_min1= j
-               ind_min2= j+1
-               do while (agep(j)-ages(ind_min1) < 0 )
-                  ind_min1 = ind_min1-1
-               enddo                  
-               do while(agep(j)-ages(ind_min2) > 0 )
-                  ind_min2 = ind_min2+1
-               enddo
+               if (agep(j)-ages(j) < 0) then
+                  ind_min1=j-1
+               else
+                  ind_min1=j
+               endif
+               ind_min2=ind_min1+1
             endif
+c     Verificacion
+c            write(*,*) ages(j), agep(j), ages(ind_min1),ages(ind_min2)
+c            write(*,*) ind_min1, ind_min2
+c            write(*,*) agep(j)-ages(ind_min1), agep(j)-ages(ind_min2)
+c            write(*,*) "=============================="
+c
+c            if ( agep(j)-ages(ind_min1) < 0 ) then
+c               write(*,*) "ERROR", agep(j)-ages(ind_min2)
+c               pause
+c            endif
 C     Interpolo en magnitud a la edad del track de la primaria
             DO L=1,3
                M_INT=MS(IND_MIN1,L)+(MS(IND_MIN2,L)-MS(IND_MIN1,L))
@@ -102,7 +107,6 @@ C
             ENDDO
          else
             DO L=1,3
-C               write(*,*) "SEGUNDO DO",J, ABS(AGEP(J)-AGES(J))
                M(J,L)=-2.5*LOG10(10**(-0.4*MP(J,L))+10**(-0.4*MS(J,L)))
                WRITE(40,*) (MS(J,K),K=1,3)
             ENDDO
