@@ -2,7 +2,7 @@
       IMPLICIT NONE
       INTEGER I,J,L,K,IO,HEAD_LINES,COL1,COL2,jmaxp,jmaxs
       INTEGER IND_MIN1,IND_MIN2,MAX1,MAX2
-      REAL*4 MP(0:5000,3),MS(0:5000,3),M(0:5000,3)
+      REAL*4 MP(0:5000,5),MS(0:5000,5),M(0:5000,5)
       REAL*4 AGEP(0:5000), AGES(0:5000),junk,DELTAT,MIN
       REAL*4 M_int
       CHARACTER*60 NAME1,NAME2,FMT_SALIDA,FMT_HEADER,FMT_SALIDA2
@@ -30,7 +30,8 @@ C     COL1=8 !Columna que quiero que lea
       COL2=8
       DO WHILE(IO.EQ.0)
          READ(10,*,IOSTAT=IO) (JUNK, i=1,col1-1), AGEP(J)
-     & , (JUNK, i=COL1+1,COL2-1),MP(j,1),MP(j,2),MP(j,3) !lee la edad y U,B,V
+     &        , (JUNK, i=COL1+1,COL2-1),(MP(J,I),I=1,5)
+c        MP(j,1),MP(j,2),MP(j,3) !lee la edad y U,B,V,R,I
          J=J+1
       ENDDO
       jmaxp=j-2
@@ -43,7 +44,8 @@ C     COL1=8 !Columna que quiero que lea
       J=0
       DO WHILE(IO.EQ.0)
          READ(11,*,IOSTAT=IO) (JUNK, i=1,col1-1),AGES(J),(JUNK, i=COL1+1
-     &     ,COL2-1),MS(j,1),MS(j,2),MS(j,3) !Lee la edad, y U,B,V
+     &        ,COL2-1),(MS(J,I),I=1,5)
+c        ,MS(j,1),MS(j,2),MS(j,3) !Lee la edad, y U,B,V,R,I
          J=J+1
       ENDDO
       jmaxs=j-2
@@ -58,12 +60,12 @@ C     COL1=8 !Columna que quiero que lea
 !     Condicion de igual edad
       OPEN(UNIT=40,FILE="TEST") !En 40 escribo los puntos que se
 c      utilizan de la secundaria para combinar las mag.
-      write(*,*) max1,agep(jmaxp), ages(jmaxs)
+      write(*,*) max1,agep(jmaxp), ages(jmaxs) !control
 c     REVISADO
-      DO J=0,MAX1     !Lo hago hasta la mas joven    
-         if(ABS(AGEP(J)-AGES(J)) > 0.01) then
+      DO J=0,MAX1               !Lo hago hasta la mas joven
+         MIN=ABS(AGEP(J)-AGES(J))
+         if(MIN > 0.01) then
             I=0
-            MIN=ABS(AGEP(J)-AGES(J))
             ind_min1=0
             ind_min2=0
             DO WHILE(I<=MAX1)
@@ -98,7 +100,7 @@ c               write(*,*) "ERROR", agep(j)-ages(ind_min2)
 c               pause
 c            endif
 C     Interpolo en magnitud a la edad del track de la primaria
-            DO L=1,3
+            DO L=1,5
                M_INT=MS(IND_MIN1,L)+(MS(IND_MIN2,L)-MS(IND_MIN1,L))
      &        /(AGES(IND_MIN2)-AGES(IND_MIN1))*(AGEP(J)-AGES(IND_MIN1)) 
 C
@@ -107,7 +109,7 @@ C
      &              ,AGEP(J),deltat, abs(agep(j)-ages(ind_min1))
             ENDDO
          else
-            DO L=1,3
+            DO L=1,5
                M(J,L)=-2.5*LOG10(10**(-0.4*MP(J,L))+10**(-0.4*MS(J,L)))
                WRITE(40,*) (MS(J,K),K=1,3)
             ENDDO
@@ -115,9 +117,9 @@ C
       ENDDO
 C      
       !Formatos de salida
-      FMT_SALIDA="(11(F8.5,1X))"
+      FMT_SALIDA="(17(F8.5,1X))"
       FMT_HEADER="(A,1x,9(A4,5X),A8)"
-      FMT_SALIDA2="(3(F8.5,1x),3(A8,1x),4(F8.5,1x),A8)"
+      FMT_SALIDA2="(5(F8.5,1x),5(A8,1x),6(F8.5,1x),A8)"
       BARRA="#==========================================================
      &======================"
       WRITE(30,FMT_HEADER) "#","U_p","B_p","V_p","U_s","B_s","V_s",
@@ -125,11 +127,12 @@ C
       WRITE(30,"(A90)") BARRA
       DO I=0,MAX1
          if (I > jmaxs ) then
-            write(30,FMT_SALIDA2) (MP(I,L), L=1,3), "########",
-     &    "########","########", (M(I,L), L=1,3), AGEP(i), "########"
+            write(30,FMT_SALIDA2) (MP(I,L), L=1,5), "########",
+     &           "########","########", "########", "########"
+     &           , (M(I,L), L=1,5), AGEP(i), "########"
          else
-            write(30,FMT_SALIDA) (MP(I,L), L=1,3), (MS(I,L), L=1,3)
-     &    , (M(I,L), L=1,3), AGEP(i), ages(i) !Escribo las 3 magnitudes
+            write(30,FMT_SALIDA) (MP(I,L), L=1,5), (MS(I,L), L=1,5)
+     &    , (M(I,L), L=1,5), AGEP(i), ages(i) !Escribo las 3 magnitudes
          endif
        enddo
 c
