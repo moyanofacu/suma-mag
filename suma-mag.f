@@ -68,7 +68,7 @@ c     REVISADO
             I=0
             ind_min1=0
             ind_min2=0
-            DO WHILE(I<=MAX1)
+            DO WHILE(I<=JMAXS)
                DELTAT=ABS(AGEP(J)-AGES(I)) !ESTE RECORRE LA SECUNDARIA
                if (deltat < min) then ! Busco el mas cercano en edad del otro track
                   min=deltat
@@ -106,7 +106,7 @@ C     Interpolo en magnitud a la edad del track de la primaria
 C
                M(J,L)=-2.5*LOG10(10**(-0.4*MP(J,L))+10**(-0.4*M_INT))
                WRITE(40,*) (MS(IND_MIN1,K),K=1,3), ind_min1, ind_min2
-     &              ,AGEP(J),deltat, abs(agep(j)-ages(ind_min1))
+     &              ,AGEP(J),min, AGES(IND_MIN2)-AGES(IND_MIN1)
             ENDDO
          else
             DO L=1,5
@@ -132,7 +132,7 @@ C
      &           , (M(I,L), L=1,5), AGEP(i), "########"
          else
             write(30,FMT_SALIDA) (MP(I,L), L=1,5), (MS(I,L), L=1,5)
-     &    , (M(I,L), L=1,5), AGEP(i), ages(i) !Escribo las 3 magnitudes
+     &    , (M(I,L), L=1,5), AGEP(i), ages(i) !Escribo las 5 magnitudes
          endif
        enddo
 c
