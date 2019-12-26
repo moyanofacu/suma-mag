@@ -3,7 +3,7 @@
       INTEGER I,J,L,K,IO,HEAD_LINES,COL1,COL2,jmaxp,jmaxs
       INTEGER IND_MIN1,IND_MIN2,MAX1,MAX2
       REAL*4 MP(0:5000,5),MS(0:5000,5),M(0:5000,5)
-      REAL*4 AGEP(0:5000), AGES(0:5000),junk,DELTAT,MIN
+      REAL*4 AGEP(0:5000), AGES(0:5000),junk,DELTAT,MIN,DENO
       REAL*4 M_int
       CHARACTER*60 NAME1,NAME2,FMT_SALIDA,FMT_HEADER,FMT_SALIDA2
       CHARACTER*90 BARRA
@@ -101,13 +101,23 @@ c               pause
 c            endif
 C     Interpolo en magnitud a la edad del track de la primaria
             DO L=1,5
+               DENO=AGES(IND_MIN2)-AGES(IND_MIN1)
+               if(DABS(DENO-0.D0).LT.1.D-6) THEN ! Por si tienen la misma edad
+                  M(J,L)=-2.5*LOG10(10**(-0.4*MP(J,L))
+     &                 +10**(-0.4*MS(IND_MIN1,L)))
+c                  write(*,*) ind_min1 !control
+               else
                M_INT=MS(IND_MIN1,L)+(MS(IND_MIN2,L)-MS(IND_MIN1,L))
-     &        /(AGES(IND_MIN2)-AGES(IND_MIN1))*(AGEP(J)-AGES(IND_MIN1)) 
+     &              /DENO*(AGEP(J)-AGES(IND_MIN1)) 
 C
-               M(J,L)=-2.5*LOG10(10**(-0.4*MP(J,L))+10**(-0.4*M_INT))
-               WRITE(40,*) (MS(IND_MIN1,K),K=1,3), ind_min1, ind_min2
-     &              ,AGEP(J),min, AGES(IND_MIN2)-AGES(IND_MIN1)
+                  M(J,L)=-2.5*LOG10(10**(-0.4*MP(J,L))+10**(-0.4*M_INT))
+               endif
             ENDDO
+!     Control
+            WRITE(40,*) (MS(IND_MIN1,K),K=1,3), ind_min1, ind_min2
+     &           ,AGEP(J), ages(ind_min1),min
+     &       , AGES(IND_MIN2)-AGES(IND_MIN1)
+
          else
             DO L=1,5
                M(J,L)=-2.5*LOG10(10**(-0.4*MP(J,L))+10**(-0.4*MS(J,L)))
